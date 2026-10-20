@@ -1,3 +1,38 @@
 plugins {
-    id 'com.android.application' version '8.5.2' apply false
+    id 'com.android.application' version '8.5.2'
+}
+
+// Copy the .java files from the repo root into a clean folder, so Gradle never reads its own build output.
+tasks.register('copySrc', Copy) {
+    from(projectDir) { include '*.java' }
+    into(layout.buildDirectory.dir('gensrc/online/zhaan/smsforwarder'))
+}
+
+android {
+    namespace 'online.zhaan.smsforwarder'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'online.zhaan.smsforwarder'
+        minSdk 24
+        targetSdk 34
+        versionCode 3
+        versionName "1.2"
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = [layout.buildDirectory.dir('gensrc')]
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach { dependsOn tasks.named('copySrc') }
+
+dependencies {
+    implementation 'androidx.work:work-runtime:2.9.1'
 }
